@@ -18,7 +18,7 @@ app.get("/iframe", (req, res) =>
     sourceUrl: req.query.url,
     baseHref: req.query.baseHref || true
   })
-)``;
+);
 ```
 
 ## Params
