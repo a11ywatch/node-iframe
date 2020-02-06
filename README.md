@@ -1,4 +1,4 @@
-# Node iframe
+# Node Iframe
 
 create iframes to bypass security issues on your server with node js
 
@@ -40,7 +40,7 @@ async function fetchIframe() {
 
 ![Example Render ](https://raw.githubusercontent.com/A11yWatch/Project-Screenshots/master/node-iframe.png)
 
-Screenshot above is an example image of the package used at [link to A11ywatch](https://www.a11ywatch.com)
+Screenshot above is an example image of the package used at [A11ywatch](https://www.a11ywatch.com)
 
 ## Params
 
@@ -48,4 +48,4 @@ Node iframe has one param Object with a `url` prop that is the url of the websit
 
 ## About
 
-This project uses cheerio to manipulate dom contents very fast. If your iframe fails to render thats where the security issues need to be reverse hacked by us for the bypass. As an alternative solution if the frame fails to load simply fall back to the normal source of your content. You can fire this as an api request directly with `fetch` to get the website as html or use directly as your iframe src for best perfomance.
+This project uses cheerio to manipulate dom contents very fast. If your iframe fails to render thats where the security issues need to be reverse hacked by us. As an alternative solution if the iframe fails to load simply fall back to the normal url of web page. You can fire this as an api request directly with `fetch` to get the website as html or use directly as your iframe src for best perfomance.
