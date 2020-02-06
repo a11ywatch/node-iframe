@@ -8,28 +8,28 @@ const { stdTTL, headers } = require("./config");
 const cache = new NodeCache({ stdTTL });
 
 // Experimental manipulation
-// function manipulateSource(i, src, sourceUrl) {
+// function manipulateSource(i, src, url) {
 //   if (src) {
-//     if (!src.includes(sourceUrl)) {
+//     if (!src.includes(url)) {
 //       const newSrc = src.replace(/^[/]+/, "");
-//       src = `${newSrc.includes("http") ? "" : sourceUrl + "/"}` + newSrc;
+//       src = `${newSrc.includes("http") ? "" : url + "/"}` + newSrc;
 //     }
 //     return src;
 //   }
 //   return null;
 // }
 
-async function renderHtml({ sourceUrl, baseHref }) {
-  const cachedHtml = await cache.get(sourceUrl);
+async function renderHtml({ url, baseHref }) {
+  const cachedHtml = await cache.get(url);
 
   if (cachedHtml) {
     return cheerio.load(cachedHtml);
   }
 
-  if (isUrl(sourceUrl)) {
+  if (isUrl(url)) {
     try {
-      const response = await fetch(sourceUrl, {
-        uri: sourceUrl,
+      const response = await fetch(url, {
+        uri: url,
         headers
       });
       const html = await response.text();
@@ -37,21 +37,21 @@ async function renderHtml({ sourceUrl, baseHref }) {
       // response.headers.has('access-control-allow-origin')
 
       if ($html) {
-        $html("head").prepend(`<base target="_self" href="${sourceUrl}">`);
+        $html("head").prepend(`<base target="_self" href="${url}">`);
         if (typeof baseHref !== "undefined" && baseHref !== "false") {
           $html("script").attr("crossorigin", "anonymous");
           // $html('script').attr('src', (i, src) =>
-          //   manipulateSource(i, src, sourceUrl)
+          //   manipulateSource(i, src, url)
           // )
           // $html('link').attr('href', (i, src) =>
-          //   manipulateSource(i, src, sourceUrl)
+          //   manipulateSource(i, src, url)
           // )
         }
         // create or inject scripts here to bypass security issues by reverse engineering
         // $html('head').prepend(`<script async>
         // console.trace();
         // </script>`)
-        cache.set(sourceUrl, $html.html());
+        cache.set(url, $html.html());
       }
 
       return $html;
@@ -68,7 +68,7 @@ function createIframe(req, res, next) {
     const error_template = () =>
       res.status(400).send(WEBSITE_NOT_FOUND_TEMPLATE);
 
-    if (!model.sourceUrl) {
+    if (!model.url) {
       error_template();
     }
 
