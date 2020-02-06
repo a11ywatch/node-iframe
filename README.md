@@ -38,6 +38,10 @@ async function fetchIframe() {
 }
 ```
 
+![Example Render ](https://raw.githubusercontent.com/A11yWatch/Project-Screenshots/master/node-iframe.png)
+
+Screenshot above is an example image of the package used at [link to A11ywatch](https://www.a11ywatch.com)
+
 ## Params
 
 Node iframe has one param Object with a `url` prop that is the url of the website and `baseHref` is optional property that will inject crossorigin="anonymous" onto all your script tags.
