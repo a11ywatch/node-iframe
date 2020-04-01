@@ -1,6 +1,7 @@
 const isUrl = require("is-url");
 const cheerio = require("cheerio");
 const NodeCache = require("node-cache");
+const fetch = require("isomorphic-unfetch");
 
 const { WEBSITE_NOT_FOUND_TEMPLATE } = require("./templates/not-found");
 const { stdTTL, headers } = require("./config");
