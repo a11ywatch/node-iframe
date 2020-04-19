@@ -31,7 +31,7 @@ async function renderHtml({ url, baseHref }) {
     try {
       const response = await fetch(url, {
         uri: url,
-        headers
+        headers,
       });
       const html = await response.text();
       const $html = cheerio.load(html);
@@ -65,7 +65,7 @@ async function renderHtml({ url, baseHref }) {
 }
 
 function createIframe(req, res, next) {
-  res.createIframe = async model => {
+  res.createIframe = async (model) => {
     const error_template = () =>
       res.status(400).send(WEBSITE_NOT_FOUND_TEMPLATE);
 
@@ -77,10 +77,6 @@ function createIframe(req, res, next) {
       const $html = await renderHtml(model);
 
       if ($html && typeof $html.html === "function") {
-        // inject footer height of the navigation bar
-        $html("body").append(
-          `<span style="height: 64px; display: block;" /><span>`
-        );
         res.status(200).send($html.html());
       } else {
         error_template();
