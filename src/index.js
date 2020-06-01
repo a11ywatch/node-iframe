@@ -13,7 +13,7 @@ function manipulateSource(i, src, url, $html) {
   if (src) {
     const isSlash = src[0] === "/";
 
-    async function grabData() {
+    void (async function grabData() {
       if (isSlash) {
         const pathUrl = `${url}${isSlash ? "" : "/"}${src}`;
 
@@ -27,9 +27,7 @@ function manipulateSource(i, src, url, $html) {
         $html(`script[src="${src}"]`).html(scriptText);
         return true;
       }
-    }
-
-    grabData();
+    })();
 
     return src;
   }
@@ -37,70 +35,71 @@ function manipulateSource(i, src, url, $html) {
 }
 
 async function renderHtml({ url, baseHref }) {
-  const cachedHtml = await cache.get(url);
+  try {
+    const cachedHtml = await cache.get(url);
 
-  if (cachedHtml) {
-    return cheerio.load(cachedHtml);
+    if (cachedHtml) {
+      return cheerio.load(cachedHtml);
+    }
+  } catch (e) {
+    console.log(e);
   }
 
-  if (isUrl(url)) {
-    try {
-      const response = await fetch(url, {
-        uri: url,
-        headers,
-      });
-      const html = await response.text();
-      const $html = cheerio.load(html);
+  try {
+    const response = await fetch(url, {
+      uri: url,
+      headers,
+    });
+    const html = await response.text();
+    const $html = cheerio.load(html);
 
-      if ($html) {
-        $html("head").prepend(`<base target="_self" href="${url}">`);
+    if ($html) {
+      $html("head").prepend(`<base target="_self" href="${url}">`);
 
-        if (typeof baseHref !== "undefined" && baseHref !== "false") {
-          // $html('script').attr('crossorigin', 'anonymous')
-          $html("script").attr("src", (i, src) =>
-            manipulateSource(i, src, url, $html)
-          );
+      if (typeof baseHref !== "undefined" && baseHref !== "false") {
+        // $html('script').attr('crossorigin', 'anonymous')
+        $html("script").attr("src", (i, src) =>
+          manipulateSource(i, src, url, $html)
+        );
 
-          // $html('link').attr('href', (i, src) =>
-          //   manipulateSource(i, src, url)
-          // )
-        }
-        // create or inject scripts here to bypass security issues by reverse engineering
-        // $html('head').prepend(`<script async>
-        // console.trace();
-        // </script>`)
-        cache.set(url, $html.html());
+        // $html('link').attr('href', (i, src) =>
+        //   manipulateSource(i, src, url)
+        // )
       }
-
-      return $html;
-    } catch (fetchError) {
-      console.log(fetchError);
+      // create or inject scripts here to bypass security issues by reverse engineering
+      // $html('head').prepend(`<script async>
+      // console.trace();
+      // </script>`)
+      cache.set(url, $html.html());
     }
+
+    return $html;
+  } catch (fetchError) {
+    console.log(fetchError);
   }
 
   return false;
 }
 
 function createIframe(req, res, next) {
+  const renderError = () => res.status(400).send(WEBSITE_NOT_FOUND_TEMPLATE);
+
   res.createIframe = async (model) => {
-    const error_template = () =>
-      res.status(400).send(WEBSITE_NOT_FOUND_TEMPLATE);
-
-    if (!model.url) {
-      error_template();
-    }
-
     try {
+      if (!model.url) {
+        renderError();
+      }
+
       const $html = await renderHtml(model);
 
       if ($html && typeof $html.html === "function") {
         res.status(200).send($html.html());
       } else {
-        error_template();
+        renderError();
       }
     } catch (er) {
       console.log(er);
-      error_template();
+      renderError();
     }
   };
 
