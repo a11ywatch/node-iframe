@@ -35,6 +35,9 @@ function manipulateSource(i, src, url, $html) {
 }
 
 async function renderHtml({ url, baseHref }) {
+  if (!isUrl(url)) {
+    return null;
+  }
   try {
     const cachedHtml = await cache.get(url);
 
