@@ -38,7 +38,7 @@ async function fetchIframe() {
 }
 ```
 
-![Example Render ](https://raw.githubusercontent.com/A11yWatch/Project-Screenshots/master/node-iframe.png)
+[Example](https://www.a11ywatch.com/testout)
 
 Screenshot above is an example image of the package used at [A11ywatch](https://www.a11ywatch.com)
 
