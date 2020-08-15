@@ -4,30 +4,33 @@ const NodeCache = require("node-cache");
 const fetch = require("isomorphic-unfetch");
 
 const { WEBSITE_NOT_FOUND_TEMPLATE } = require("./templates/not-found");
-const { stdTTL, headers } = require("./config");
+const { stdTTL, checkperiod, headers } = require("./config");
 
-const cache = new NodeCache({ stdTTL });
+const cache = new NodeCache({ stdTTL, checkperiod });
 
 // Experimental manipulation
 function manipulateSource(i, src, url, $html) {
   if (src) {
-    const isSlash = src[0] === "/";
+    const isSlash = src && src[0] === "/";
 
-    void (async function grabData() {
-      if (isSlash) {
-        const pathUrl = `${url}${isSlash ? "" : "/"}${src}`;
+    if (isSlash) {
+      try {
+        void (async function grabData() {
+          const pathUrl = `${url}${isSlash ? "" : "/"}${src}`;
 
-        const scriptCode = await fetch(pathUrl, {
-          uri: pathUrl,
-          headers,
-        });
+          const scriptCode = await fetch(pathUrl, {
+            uri: pathUrl,
+            headers,
+          });
 
-        const scriptText = await scriptCode.text();
+          const scriptText = await scriptCode.text();
 
-        $html(`script[src="${src}"]`).html(scriptText);
-        return true;
+          $html(`script[src="${src}"]`).html(scriptText);
+        })();
+      } catch (e) {
+        console.error(e);
       }
-    })();
+    }
 
     return src;
   }
@@ -38,6 +41,7 @@ async function renderHtml({ url, baseHref }) {
   if (!isUrl(url)) {
     return null;
   }
+
   try {
     const cachedHtml = await cache.get(url);
 
@@ -45,7 +49,7 @@ async function renderHtml({ url, baseHref }) {
       return cheerio.load(cachedHtml);
     }
   } catch (e) {
-    console.log(e);
+    console.error(e);
   }
 
   try {
@@ -64,7 +68,6 @@ async function renderHtml({ url, baseHref }) {
         $html("script").attr("src", (i, src) =>
           manipulateSource(i, src, url, $html)
         );
-
         // $html('link').attr('href', (i, src) =>
         //   manipulateSource(i, src, url)
         // )
@@ -77,8 +80,8 @@ async function renderHtml({ url, baseHref }) {
     }
 
     return $html;
-  } catch (fetchError) {
-    console.log(fetchError);
+  } catch (e) {
+    console.error(e);
   }
 
   return false;

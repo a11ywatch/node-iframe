@@ -1,5 +1,7 @@
-const stdTTL = process.env.NODE_ENV !== "production" ? 30 : 600;
+const stdTTL = 100;
+const checkperiod = 120;
 
 module.exports = {
   stdTTL,
+  checkperiod,
 };
