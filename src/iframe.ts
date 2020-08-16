@@ -1,10 +1,11 @@
-const isUrl = require("is-url");
-const cheerio = require("cheerio");
-const NodeCache = require("node-cache");
-const fetch = require("isomorphic-unfetch");
+import isUrl from "is-url";
+import cheerio from "cheerio";
+import NodeCache from "node-cache";
+// @ts-ignore
+import fetch from "isomorphic-unfetch";
 
-const { WEBSITE_NOT_FOUND_TEMPLATE } = require("./templates/not-found");
-const { stdTTL, checkperiod, headers } = require("./config");
+import { WEBSITE_NOT_FOUND_TEMPLATE } from "./templates/not-found";
+import { stdTTL, checkperiod, headers } from "./config";
 
 const cache = new NodeCache({ stdTTL, checkperiod });
 
@@ -87,29 +88,45 @@ async function renderHtml({ url, baseHref }) {
   return false;
 }
 
+const renderError = (res) => res.status(400).send(WEBSITE_NOT_FOUND_TEMPLATE);
+
 function createIframe(req, res, next) {
-  const renderError = () => res.status(400).send(WEBSITE_NOT_FOUND_TEMPLATE);
-
   res.createIframe = async (model) => {
+    if (!model.url) {
+      renderError(res);
+    }
     try {
-      if (!model.url) {
-        renderError();
-      }
-
       const $html = await renderHtml(model);
 
       if ($html && typeof $html.html === "function") {
         res.status(200).send($html.html());
       } else {
-        renderError();
+        renderError(res);
       }
     } catch (er) {
-      console.log(er);
-      renderError();
+      console.error(er);
+      renderError(res);
     }
   };
 
   next();
 }
 
-module.exports = createIframe;
+export async function fetchFrame(model) {
+  if (!model.url) {
+    return WEBSITE_NOT_FOUND_TEMPLATE;
+  }
+  try {
+    const $html = await renderHtml(model);
+    if ($html && typeof $html.html === "function") {
+      return $html.html();
+    } else {
+      return WEBSITE_NOT_FOUND_TEMPLATE;
+    }
+  } catch (er) {
+    console.error(er);
+    return WEBSITE_NOT_FOUND_TEMPLATE;
+  }
+}
+
+export default createIframe;

@@ -1,6 +1,6 @@
 # Node Iframe
 
-create iframes to bypass security issues on your server with node js
+create iframes to bypass security issues on your server with node.js
 
 ## Installation
 
@@ -18,7 +18,7 @@ app.use(createIframe);
 app.get("/iframe", (req, res) =>
   res.createIframe({
     url: req.query.url,
-    baseHref: req.query.baseHref || true
+    baseHref: req.query.baseHref || true,
   })
 );
 ```
@@ -32,9 +32,10 @@ On the client use directly in your iframe if your api is on the same server set 
 You can even fetch the iframe directly on the content if needed.
 
 ```typescript
+const { fetchFrame } = require("node-iframe");
+
 async function fetchIframe() {
-  const iframe = await fetch("/iframe/?url=https://www.etsy.com");
-  return iframe;
+  return await fetchFrame("/iframe/?url=https://www.etsy.com");
 }
 ```
 

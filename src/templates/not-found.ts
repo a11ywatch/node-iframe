@@ -6,6 +6,4 @@ const WEBSITE_NOT_FOUND_TEMPLATE = `
 </div>
 `;
 
-module.exports = {
-  WEBSITE_NOT_FOUND_TEMPLATE
-};
+export { WEBSITE_NOT_FOUND_TEMPLATE };
