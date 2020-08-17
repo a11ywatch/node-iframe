@@ -92,10 +92,10 @@ const renderError = (res) => res.status(400).send(WEBSITE_NOT_FOUND_TEMPLATE);
 
 function createIframe(req, res, next) {
   res.createIframe = async (model) => {
-    if (!model.url) {
-      renderError(res);
-    }
     try {
+      if (!model.url) {
+        renderError(res);
+      }
       const $html = await renderHtml(model);
 
       if ($html && typeof $html.html === "function") {
@@ -113,10 +113,10 @@ function createIframe(req, res, next) {
 }
 
 export async function fetchFrame(model) {
-  if (!model.url) {
-    return WEBSITE_NOT_FOUND_TEMPLATE;
-  }
   try {
+    if (!model.url) {
+      return WEBSITE_NOT_FOUND_TEMPLATE;
+    }
     const $html = await renderHtml(model);
     if ($html && typeof $html.html === "function") {
       return $html.html();

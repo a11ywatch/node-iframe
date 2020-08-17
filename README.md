@@ -1,4 +1,4 @@
-# Node Iframe
+# node-iframe
 
 create iframes to bypass security issues on your server with node.js
 
@@ -18,7 +18,7 @@ app.use(createIframe);
 app.get("/iframe", (req, res) =>
   res.createIframe({
     url: req.query.url,
-    baseHref: req.query.baseHref || true,
+    baseHref: req.query.baseHref, // optional,
   })
 );
 ```
@@ -50,3 +50,7 @@ Node iframe has one param Object with a `url` prop that is the url of the websit
 ## About
 
 This project uses cheerio to manipulate dom contents very fast. If your iframe fails to render thats where the security issues need to be reverse hacked by us. As an alternative solution if the iframe fails to load simply fall back to the normal url of web page. You can fire this as an api request directly with `fetch` to get the website as html or use directly as your iframe src for best perfomance.
+
+## License
+
+MIT
