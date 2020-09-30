@@ -1,5 +1,7 @@
 # node-iframe
 
+[![A11yWatch](https://circleci.com/gh/A11yWatch/node-iframe.svg?style=svg)](https://circleci.com/gh/A11yWatch/node-iframe)
+
 create iframes to bypass security issues on your server with node.js
 
 ## Installation
