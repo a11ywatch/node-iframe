@@ -1,13 +1,12 @@
 import isUrl from "is-url";
 import cheerio from "cheerio";
-// @ts-ignore
 import fetch from "isomorphic-unfetch";
 
-import { WEBSITE_NOT_FOUND_TEMPLATE } from "@app/templates/not-found";
+import { NO_URL_TEMPLATE, WEBSITE_NOT_FOUND_TEMPLATE } from "@app/templates";
 import { headers } from "@app/config";
 import { appCache, configureCacheControl } from "@app/cache";
 
-// Experimental manipulation NOTE: needs control type like wappalyzer
+// NOTE: needs control type like wappalyzer for usage only on websites that use specefic frameworks like old versions of react, angular, vue, and etc
 function manipulateSource(i, src, url, $html) {
   if (src) {
     const trailing = src && src[0] === "/";
@@ -92,15 +91,13 @@ function createIframe(req, res, next) {
   res.createIframe = async (model) => {
     try {
       if (!model.url) {
-        renderError(res);
+        res.status(404).send(NO_URL_TEMPLATE);
       }
       const $html = await renderHtml(model);
 
-      if ($html && typeof $html?.html === "function") {
-        res.status(200).send($html.html());
-      } else {
-        renderError(res);
-      }
+      typeof $html?.html === "function"
+        ? res.status(200).send($html.html())
+        : renderError(res);
     } catch (e) {
       console.error(e);
       renderError(res);
@@ -116,7 +113,7 @@ export async function fetchFrame(model) {
       const $html = await renderHtml(model);
       return $html?.html() || WEBSITE_NOT_FOUND_TEMPLATE;
     }
-    return WEBSITE_NOT_FOUND_TEMPLATE;
+    return NO_URL_TEMPLATE;
   } catch (e) {
     console.error(e);
     return WEBSITE_NOT_FOUND_TEMPLATE;
