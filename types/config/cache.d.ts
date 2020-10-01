@@ -1,3 +1,7 @@
 declare const stdTTL = 100;
 declare const checkperiod = 120;
-export { stdTTL, checkperiod };
+declare const cacheConfig: {
+    stdTTL: number;
+    checkperiod: number;
+};
+export { stdTTL, checkperiod, cacheConfig };

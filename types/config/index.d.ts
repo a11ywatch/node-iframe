@@ -1,2 +1,2 @@
-export { stdTTL, checkperiod } from "./cache";
+export { stdTTL, checkperiod, cacheConfig } from "./cache";
 export { headers } from "./headers";

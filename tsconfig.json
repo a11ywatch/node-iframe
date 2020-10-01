@@ -11,7 +11,11 @@
     "declarationDir": "./types",
     "strict": true,
     "esModuleInterop": true,
-    "skipLibCheck": true
+    "skipLibCheck": true,
+    "baseUrl": ".",
+    "paths": {
+      "@app/*": ["src/*"]
+    }
   },
   "include": ["src/**/*"],
   "exclude": ["node_modules"]

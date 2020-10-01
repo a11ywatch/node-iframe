@@ -1,23 +1,21 @@
 import isUrl from "is-url";
 import cheerio from "cheerio";
-import NodeCache from "node-cache";
 // @ts-ignore
 import fetch from "isomorphic-unfetch";
 
-import { WEBSITE_NOT_FOUND_TEMPLATE } from "./templates/not-found";
-import { stdTTL, checkperiod, headers } from "./config";
+import { WEBSITE_NOT_FOUND_TEMPLATE } from "@app/templates/not-found";
+import { headers } from "@app/config";
+import { appCache, configureCacheControl } from "@app/cache";
 
-const cache = new NodeCache({ stdTTL, checkperiod });
-
-// Experimental manipulation
+// Experimental manipulation NOTE: needs control type like wappalyzer
 function manipulateSource(i, src, url, $html) {
   if (src) {
-    const isSlash = src && src[0] === "/";
+    const trailing = src && src[0] === "/";
 
-    if (isSlash) {
+    if (trailing) {
       try {
         void (async function grabData() {
-          const pathUrl = `${url}${isSlash ? "" : "/"}${src}`;
+          const pathUrl = `${url}${trailing ? "" : "/"}${src}`;
 
           const scriptCode = await fetch(pathUrl, {
             uri: pathUrl,
@@ -44,7 +42,7 @@ async function renderHtml({ url, baseHref }) {
   }
 
   try {
-    const cachedHtml = await cache.get(url);
+    const cachedHtml = await appCache.get(url);
 
     if (cachedHtml) {
       return cheerio.load(cachedHtml);
@@ -77,7 +75,7 @@ async function renderHtml({ url, baseHref }) {
       // $html('head').prepend(`<script async>
       // console.trace();
       // </script>`)
-      cache.set(url, $html.html());
+      appCache.set(url, $html.html());
     }
 
     return $html;
@@ -98,13 +96,13 @@ function createIframe(req, res, next) {
       }
       const $html = await renderHtml(model);
 
-      if ($html && typeof $html.html === "function") {
+      if ($html && typeof $html?.html === "function") {
         res.status(200).send($html.html());
       } else {
         renderError(res);
       }
-    } catch (er) {
-      console.error(er);
+    } catch (e) {
+      console.error(e);
       renderError(res);
     }
   };
@@ -114,19 +112,16 @@ function createIframe(req, res, next) {
 
 export async function fetchFrame(model) {
   try {
-    if (!model.url) {
-      return WEBSITE_NOT_FOUND_TEMPLATE;
+    if (model?.url) {
+      const $html = await renderHtml(model);
+      return $html?.html() || WEBSITE_NOT_FOUND_TEMPLATE;
     }
-    const $html = await renderHtml(model);
-    if ($html && typeof $html.html === "function") {
-      return $html.html();
-    } else {
-      return WEBSITE_NOT_FOUND_TEMPLATE;
-    }
-  } catch (er) {
-    console.error(er);
+    return WEBSITE_NOT_FOUND_TEMPLATE;
+  } catch (e) {
+    console.error(e);
     return WEBSITE_NOT_FOUND_TEMPLATE;
   }
 }
 
+export { configureCacheControl };
 export default createIframe;

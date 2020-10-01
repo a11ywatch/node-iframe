@@ -1,5 +1,6 @@
-import { fetchFrame } from "../src/iframe";
-import { WEBSITE_NOT_FOUND_TEMPLATE } from "../src/templates";
+import { fetchFrame } from "@app/iframe";
+import { WEBSITE_NOT_FOUND_TEMPLATE } from "@app/templates";
+import { appCache } from "@app/cache";
 
 const url = process.env.API_URL || "https://www.drake.com";
 

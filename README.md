@@ -34,7 +34,10 @@ On the client use directly in your iframe if your api is on the same server set 
 You can even fetch the iframe directly on the content if needed.
 
 ```typescript
-const { fetchFrame } = require("node-iframe");
+const { fetchFrame, configureCacheControl } = require("node-iframe");
+
+// optional: configure cache-control
+configureCacheControl({ stdTTL: 0, checkperiod: 600 });
 
 async function fetchIframe() {
   return await fetchFrame("/iframe/?url=https://www.etsy.com");
