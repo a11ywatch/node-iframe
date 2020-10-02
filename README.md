@@ -36,7 +36,7 @@ You can even fetch the iframe directly on the content if needed.
 ```typescript
 const { fetchFrame, configureCacheControl } = require("node-iframe");
 
-// optional: configure cache-control
+// optional: configure cache-control - check https://github.com/node-cache/node-cache#options for more options and info
 configureCacheControl({ stdTTL: 0, checkperiod: 600 });
 
 async function fetchIframe() {

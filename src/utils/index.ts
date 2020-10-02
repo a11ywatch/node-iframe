@@ -1,1 +1,1 @@
-export { fetchWithTimestamps } from "./metrics";
+export { fetchWithTimestamps, TimeStampMetrics } from "./metrics";

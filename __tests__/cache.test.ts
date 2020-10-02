@@ -7,8 +7,8 @@ test("configures app cache options properly", async () => {
   return expect(appCache.options.stdTTL).toBe(0);
 });
 
-test("iframe stores properly cached", async () => {
+test("iframe stores page cached properly", async () => {
   const res = await fetchFrame({ url });
 
-  return expect(res).toBe(appCache.data[url]?.v);
+  return expect(res).toBe(appCache.data[url].v);
 });

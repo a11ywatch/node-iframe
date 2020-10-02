@@ -6,10 +6,13 @@ interface FetchParams {
   log?: boolean;
 }
 
-interface FetchResponse {
-  res: string;
+export type TimeStampMetrics = {
   t0: number;
   t1: number;
+};
+
+interface FetchResponse extends TimeStampMetrics {
+  res: string;
 }
 
 const fetchWithTimestamps = async ({
