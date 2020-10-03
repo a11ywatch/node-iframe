@@ -1,6 +1,6 @@
 import isUrl from "is-url";
-import cheerio from "cheerio";
 import fetch from "isomorphic-unfetch";
+import { load } from "cheerio";
 
 import { NO_URL_TEMPLATE, WEBSITE_NOT_FOUND_TEMPLATE } from "@app/templates";
 import { headers } from "@app/config";
@@ -35,16 +35,21 @@ function manipulateSource(i, src, url, $html) {
   return null;
 }
 
-async function renderHtml({ url, baseHref }) {
-  if (!isUrl(url)) {
-    return null;
-  }
+function renderErrorHtml({ url, server, noPage = false }) {
+  return Object.assign(
+    load(!url ? NO_URL_TEMPLATE : WEBSITE_NOT_FOUND_TEMPLATE),
+    server ? { status: Number(`${40}${!url || noPage ? 4 : 0}`) } : {}
+  );
+}
 
+async function renderHtml({ url, baseHref }, server = false) {
+  if (!isUrl(url)) {
+    return renderErrorHtml({ url, server });
+  }
   try {
     const cachedHtml = await appCache.get(url);
-
     if (cachedHtml) {
-      return cheerio.load(cachedHtml);
+      return load(cachedHtml);
     }
   } catch (e) {
     console.error(e);
@@ -56,7 +61,7 @@ async function renderHtml({ url, baseHref }) {
       headers,
     });
     const html = await response.text();
-    const $html = cheerio.load(html);
+    const $html = load(html);
 
     if ($html) {
       $html("head").prepend(`<base target="_self" href="${url}">`);
@@ -77,47 +82,30 @@ async function renderHtml({ url, baseHref }) {
       appCache.set(url, $html.html());
     }
 
+    if (server) {
+      $html.status = 200;
+    }
+
     return $html;
   } catch (e) {
     console.error(e);
   }
 
-  return false;
+  return renderErrorHtml({ url, server, noPage: true });
 }
-
-const renderError = (res) => res.status(400).send(WEBSITE_NOT_FOUND_TEMPLATE);
 
 function createIframe(req, res, next) {
   res.createIframe = async (model) => {
-    try {
-      if (!model.url) {
-        res.status(404).send(NO_URL_TEMPLATE);
-      }
-      const $html = await renderHtml(model);
-
-      typeof $html?.html === "function"
-        ? res.status(200).send($html.html())
-        : renderError(res);
-    } catch (e) {
-      console.error(e);
-      renderError(res);
-    }
+    const $html = await renderHtml(model, true);
+    res.status($html?.status || 200).send($html.html());
   };
 
   next();
 }
 
 export async function fetchFrame(model) {
-  try {
-    if (model?.url) {
-      const $html = await renderHtml(model);
-      return $html?.html() || WEBSITE_NOT_FOUND_TEMPLATE;
-    }
-    return NO_URL_TEMPLATE;
-  } catch (e) {
-    console.error(e);
-    return WEBSITE_NOT_FOUND_TEMPLATE;
-  }
+  const $html = await renderHtml(model, typeof process !== "undefined");
+  return $html?.html();
 }
 
 export { configureCacheControl };

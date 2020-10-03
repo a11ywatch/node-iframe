@@ -1,3 +1,5 @@
+import { load } from "cheerio";
+
 import { fetchFrame } from "@app/iframe";
 import { WEBSITE_NOT_FOUND_TEMPLATE } from "@app/templates";
 import { appCache } from "@app/cache";
@@ -5,6 +7,7 @@ import { url } from "@app/config";
 import { fetchWithTimestamps, TimeStampMetrics } from "@app/utils";
 
 const requestTimeStamps: TimeStampMetrics[] = [];
+const notFoundPage = load(WEBSITE_NOT_FOUND_TEMPLATE).html();
 
 describe("iframe render", () => {
   test("is from external source", async () => {
@@ -12,7 +15,7 @@ describe("iframe render", () => {
 
     requestTimeStamps.push({ t0, t1 });
 
-    return expect(res).not.toBe(WEBSITE_NOT_FOUND_TEMPLATE);
+    return expect(res).not.toBe(notFoundPage);
   });
 
   test("is cached", async () => {
@@ -23,9 +26,9 @@ describe("iframe render", () => {
     );
   });
 
-  test("is error page", async () => {
+  test("is not found error", async () => {
     const res = await fetchFrame({ url: `/iframe?url=${url}` });
 
-    return expect(res).toBe(WEBSITE_NOT_FOUND_TEMPLATE);
+    return expect(res).toBe(notFoundPage);
   });
 });
