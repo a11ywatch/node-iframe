@@ -10,7 +10,7 @@ import {
 import { headers, cacheConfig } from "@app/config";
 import { appCache, configureCacheControl } from "@app/cache";
 
-// NOTE: needs control type like wappalyzer for usage only on websites that use specefic frameworks like old versions of react, angular, vue, and etc
+// NOTE: control type like wappalyzer for usage only on websites that use specefic frameworks like old versions of react, angular, vue, and etc
 function manipulateSource(i, src, url, $html) {
   if (src) {
     const trailing = src && src[0] === "/";
@@ -77,7 +77,7 @@ async function renderHtml({ url, baseHref }, server = false) {
     if ($html) {
       $html("head").prepend(`<base target="_self" href="${url}">`);
 
-      if (typeof baseHref !== "undefined" && baseHref !== "false") {
+      if (!!baseHref) {
         // $html('script').attr('crossorigin', 'anonymous')
         $html("script").attr("src", (i, src) =>
           manipulateSource(i, src, url, $html)

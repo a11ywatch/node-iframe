@@ -8,16 +8,16 @@ import {
 import { fetchFrame } from "@app/iframe";
 import { url } from "@app/config";
 
-const template = load("<div>test</div>").html();
-const { all, error, notFound } = TemplateType;
-
 describe("template configuration", () => {
-  test("is updated error template", async () => {
+  const template = load("<div>test</div>").html();
+  const { all, error, notFound } = TemplateType;
+
+  test("is updated error template", () => {
     configureTemplates(template, error);
     expect(templateModel[error]).toBe(template);
   });
 
-  test("is updated not-found template", async () => {
+  test("is updated not-found template", () => {
     configureTemplates(template, notFound);
     expect(templateModel[notFound]).toBe(template);
   });
@@ -28,7 +28,7 @@ describe("template configuration", () => {
     expect(res).toBe(template);
   });
 
-  test("is updated all templates to same type", async () => {
+  test("is updated all templates to same type", () => {
     const newTemplate = load("<div>new</div>").html();
 
     configureTemplates(newTemplate, all);

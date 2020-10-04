@@ -6,10 +6,10 @@ import { appCache, configureCacheControl } from "@app/cache";
 import { url } from "@app/config";
 import { fetchWithTimestamps, TimeStampMetrics } from "@app/utils";
 
-const requestTimeStamps: TimeStampMetrics[] = [];
-const notFoundPage = load(WEBSITE_NOT_FOUND_TEMPLATE).html();
-
 describe("iframe render", () => {
+  const requestTimeStamps: TimeStampMetrics[] = [];
+  const notFoundPage = load(WEBSITE_NOT_FOUND_TEMPLATE).html();
+
   test("is from external source", async () => {
     const { res, t0, t1 } = await fetchWithTimestamps({ url });
 

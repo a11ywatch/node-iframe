@@ -10,7 +10,7 @@ create iframes to bypass security issues on your server with node.js can also be
 
 ## How to use
 
-On your server
+On your server if using with express
 
 ```typescript
 const createIframe = require("node-iframe");
@@ -25,7 +25,7 @@ app.get("/iframe", (req, res) =>
 );
 ```
 
-On the client use directly in your iframe if your api is on the same server set the url below like this or if your using a framework like gatsby, nextjs, etc
+On the client use directly in your iframe if your api is on the same server set the url below like this or if your using a framework like gatsby, nextjs, etc or non-express apps
 
 ```html
 <iframe src="/iframe/?url=https://www.etsy.com" />

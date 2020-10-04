@@ -3,7 +3,7 @@ import { fetchFrame } from "@app/iframe";
 import { url, cacheConfig } from "@app/config";
 
 describe("cache control", () => {
-  test("can configure cache options", async () => {
+  test("can configure cache options", () => {
     configureCacheControl({ stdTTL: 0 });
     expect(appCache.options.stdTTL).toBe(0);
   });
@@ -14,7 +14,7 @@ describe("cache control", () => {
     expect(res).toBe(appCache.data[url].v);
   });
 
-  test("can disable cache to reduce memory used and operations", async () => {
+  test("can disable cache to reduce memory used and operations", () => {
     configureCacheControl({ disabled: true });
 
     expect(appCache).toStrictEqual(undefined);
