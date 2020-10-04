@@ -2,7 +2,11 @@ import isUrl from "is-url";
 import fetch from "isomorphic-unfetch";
 import { load } from "cheerio";
 
-import { NO_URL_TEMPLATE, WEBSITE_NOT_FOUND_TEMPLATE } from "@app/templates";
+import {
+  configureTemplates,
+  templateModel,
+  TemplateType,
+} from "@app/templates";
 import { headers } from "@app/config";
 import { appCache, configureCacheControl } from "@app/cache";
 
@@ -37,7 +41,11 @@ function manipulateSource(i, src, url, $html) {
 
 function renderErrorHtml({ url, server, noPage = false }) {
   return Object.assign(
-    load(!url ? NO_URL_TEMPLATE : WEBSITE_NOT_FOUND_TEMPLATE),
+    load(
+      !url
+        ? templateModel[TemplateType.error]
+        : templateModel[TemplateType.notFound]
+    ),
     server ? { status: Number(`${40}${!url || noPage ? 4 : 0}`) } : {}
   );
 }
@@ -108,5 +116,5 @@ export async function fetchFrame(model) {
   return $html?.html();
 }
 
-export { configureCacheControl };
+export { configureTemplates, configureCacheControl };
 export default createIframe;

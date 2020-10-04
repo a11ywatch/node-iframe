@@ -5,12 +5,12 @@ import { url } from "@app/config";
 describe("cache control", () => {
   test("can configure cache options", async () => {
     configureCacheControl({ stdTTL: 0 });
-    return expect(appCache.options.stdTTL).toBe(0);
+    expect(appCache.options.stdTTL).toBe(0);
   });
 
-  test("is in cache storange", async () => {
+  test("is in cache storage", async () => {
     const res = await fetchFrame({ url });
 
-    return expect(res).toBe(appCache.data[url].v);
+    expect(res).toBe(appCache.data[url].v);
   });
 });

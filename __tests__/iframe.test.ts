@@ -15,13 +15,13 @@ describe("iframe render", () => {
 
     requestTimeStamps.push({ t0, t1 });
 
-    return expect(res).not.toBe(notFoundPage);
+    expect(res).not.toBe(notFoundPage);
   });
 
   test("is cached", async () => {
     const { res, t0, t1 } = await fetchWithTimestamps({ url });
 
-    return expect(t1 - t0).toBeLessThanOrEqual(
+    expect(t1 - t0).toBeLessThanOrEqual(
       (requestTimeStamps[0].t1 - requestTimeStamps[0].t0) / 2
     );
   });
@@ -29,6 +29,6 @@ describe("iframe render", () => {
   test("is not found error", async () => {
     const res = await fetchFrame({ url: `/iframe?url=${url}` });
 
-    return expect(res).toBe(notFoundPage);
+    expect(res).toBe(notFoundPage);
   });
 });
