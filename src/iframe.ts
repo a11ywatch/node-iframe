@@ -55,9 +55,9 @@ async function renderHtml({ url, baseHref }, server = false) {
     return renderErrorHtml({ url, server });
   }
 
-  if (!cacheConfig.disabled) {
+  if (!cacheConfig.disabled && appCache?.get) {
     try {
-      const cachedHtml = await appCache.get(url);
+      const cachedHtml = await appCache?.get(url);
       if (cachedHtml) {
         return load(cachedHtml);
       }
@@ -90,7 +90,7 @@ async function renderHtml({ url, baseHref }, server = false) {
       // $html('head').prepend(`<script async>
       // console.trace();
       // </script>`)
-      !cacheConfig.disabled && appCache.set(url, $html.html());
+      !cacheConfig.disabled && appCache?.set(url, $html.html());
     }
 
     if (server) {

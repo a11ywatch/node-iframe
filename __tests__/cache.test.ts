@@ -1,6 +1,6 @@
 import { appCache, configureCacheControl } from "@app/cache";
 import { fetchFrame } from "@app/iframe";
-import { url } from "@app/config";
+import { url, cacheConfig } from "@app/config";
 
 describe("cache control", () => {
   test("can configure cache options", async () => {
@@ -12,5 +12,11 @@ describe("cache control", () => {
     const res = await fetchFrame({ url });
 
     expect(res).toBe(appCache.data[url].v);
+  });
+
+  test("can disable cache to reduce memory used and operations", async () => {
+    configureCacheControl({ disabled: true });
+
+    expect(appCache).toStrictEqual(undefined);
   });
 });
