@@ -7,7 +7,7 @@ import {
   templateModel,
   TemplateType,
 } from "@app/templates";
-import { headers } from "@app/config";
+import { headers, cacheConfig } from "@app/config";
 import { appCache, configureCacheControl } from "@app/cache";
 
 // NOTE: needs control type like wappalyzer for usage only on websites that use specefic frameworks like old versions of react, angular, vue, and etc
@@ -54,13 +54,16 @@ async function renderHtml({ url, baseHref }, server = false) {
   if (!isUrl(url)) {
     return renderErrorHtml({ url, server });
   }
-  try {
-    const cachedHtml = await appCache.get(url);
-    if (cachedHtml) {
-      return load(cachedHtml);
+
+  if (!cacheConfig.disabled) {
+    try {
+      const cachedHtml = await appCache.get(url);
+      if (cachedHtml) {
+        return load(cachedHtml);
+      }
+    } catch (e) {
+      console.error(e);
     }
-  } catch (e) {
-    console.error(e);
   }
 
   try {
@@ -87,7 +90,7 @@ async function renderHtml({ url, baseHref }, server = false) {
       // $html('head').prepend(`<script async>
       // console.trace();
       // </script>`)
-      appCache.set(url, $html.html());
+      !cacheConfig.disabled && appCache.set(url, $html.html());
     }
 
     if (server) {

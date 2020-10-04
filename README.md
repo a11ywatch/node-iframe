@@ -6,7 +6,7 @@ create iframes to bypass security issues on your server with node.js can also be
 
 ## Installation
 
-`yarn install node-iframe`
+`npm install node-iframe` or `yarn add node-iframe`
 
 ## How to use
 
@@ -40,9 +40,9 @@ const {
   configureTemplates,
 } = require("node-iframe");
 
-// optional: configure cache-control - check https://github.com/node-cache/node-cache#options
+// optional: configure cache-control, to disable cache set `disabled` to true - check https://github.com/node-cache/node-cache#options
 // for more options and info
-configureCacheControl({ stdTTL: 0, checkperiod: 600 });
+configureCacheControl({ stdTTL: 0, checkperiod: 600, disabled: false });
 
 // optional: configure error-pages - check src/templates for more info
 // 0: error, 1: not-found, 2: all templates - check src/templates/config for options
@@ -54,8 +54,6 @@ async function fetchIframe() {
 ```
 
 [Example](https://www.a11ywatch.com/testout)
-
-Screenshot above is an example image of the package used at [A11ywatch](https://www.a11ywatch.com)
 
 ## Params
 
