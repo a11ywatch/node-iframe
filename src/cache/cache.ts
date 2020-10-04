@@ -1,48 +1,41 @@
-import { Options as CacheOptions } from "node-cache";
+import type NodeCache from "node-cache";
+import type { Options, Data } from "node-cache";
 import { cacheConfig } from "@app/config";
 
-interface AppCache extends CacheOptions {
+interface AppCache extends Options {
   disabled?: boolean;
 }
 
-let appCache;
+const model = {
+  get(_): string | undefined {
+    return;
+  },
+  set(_, __): void {},
+  options: {} as Options,
+  data: {} as Data,
+};
 
-// Remove properties to prevent node-cache future side-effects
-function _extractValidNodeCacheOptions(options: AppCache): CacheOptions {
-  return Object.keys(options).reduce((object, key) => {
-    if (key !== "disabled") {
-      object[key] = options[key];
-    }
-    return object;
-  }, {});
-}
+let appCache = model;
 
 function createCache(): void {
   if (!cacheConfig.disabled) {
-    const NodeCache = require("node-cache");
-    appCache: NodeCache;
-    appCache = new NodeCache(
-      _extractValidNodeCacheOptions(appCache?.options || cacheConfig)
-    );
+    const Cache = require("node-cache");
+    appCache = new Cache(appCache?.options || cacheConfig) as NodeCache;
   }
 }
 
 function configureCacheControl(options: AppCache) {
   if ("disabled" in options) {
+    if (options.disabled) {
+      appCache = model;
+    }
+    const enableCache = cacheConfig.disabled && !options.disabled;
     cacheConfig.disabled = !!options.disabled;
-    options.disabled ? (appCache = undefined) : createCache();
+    enableCache && createCache();
   }
 
   if (!cacheConfig.disabled) {
-    if (typeof appCache === "undefined") {
-      appCache = {};
-    }
-
-    appCache.options = Object.assign(
-      {},
-      appCache?.options,
-      _extractValidNodeCacheOptions(options)
-    );
+    appCache.options = Object.assign({}, appCache?.options, options);
   }
 }
 

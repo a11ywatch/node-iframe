@@ -7,39 +7,71 @@ import {
   templateModel,
   TemplateType,
 } from "@app/templates";
-import { headers, cacheConfig } from "@app/config";
+import {
+  defaultConfig,
+  defaultCorsConfig,
+  defaultInlineConfig,
+  headers,
+  cacheConfig,
+} from "@app/config";
 import { appCache, configureCacheControl } from "@app/cache";
 
-// NOTE: control type like wappalyzer for usage only on websites that use specefic frameworks like old versions of react, angular, vue, and etc
-function manipulateSource(i, src, url, $html) {
-  if (src) {
-    const trailing = src && src[0] === "/";
+type CorsResourceType = "anonymous" | "use-credentials" | boolean;
 
-    if (trailing) {
-      try {
-        void (async function grabData() {
-          const pathUrl = `${url}${trailing ? "" : "/"}${src}`;
-
-          const scriptCode = await fetch(pathUrl, {
-            uri: pathUrl,
-            headers,
-          });
-
-          const scriptText = await scriptCode.text();
-
-          $html(`script[src="${src}"]`).html(scriptText);
-        })();
-      } catch (e) {
-        console.error(e);
-      }
-    }
-
-    return src;
-  }
-  return null;
+interface InlineElementsConfig {
+  script?: boolean;
 }
 
-function renderErrorHtml({ url, server, noPage = false }) {
+interface CorsElementsConfig {
+  audio?: CorsResourceType;
+  link?: CorsResourceType;
+  img?: CorsResourceType;
+  script?: CorsResourceType;
+  video?: CorsResourceType;
+}
+
+interface RenderHtmlConfig {
+  inline?: InlineElementsConfig;
+  cors?: CorsElementsConfig;
+}
+
+interface RenderHtmlSource {
+  url?: string;
+  baseHref?: string | boolean;
+  config?: RenderHtmlConfig;
+}
+
+type HtmlSource = {
+  html(): string;
+  status?: number;
+};
+
+type RenderHtml = (source: RenderHtmlSource, server?: boolean) => HtmlSource;
+
+type RenderHtmlError = (source: {
+  url?: string;
+  server?: boolean;
+  noPage?: boolean;
+}) => HtmlSource;
+
+let appSourceConfig = defaultConfig;
+
+// NOTE: control type like wappalyzer for usage only on websites that use specefic frameworks like old versions of react, angular, vue, and etc
+const mutateSource = async ({ src = "", key }, url, $html) => {
+  if (src && src[0] === "/") {
+    try {
+      const res = await fetch(`${url}/${src}`, {
+        headers,
+      });
+      const source = await res.text();
+      await $html(key).html(source);
+    } catch (e) {
+      console.error(e);
+    }
+  }
+};
+
+function renderErrorHtml<RenderHtmlError>({ url, server, noPage = false }) {
   return Object.assign(
     load(
       !url
@@ -50,48 +82,83 @@ function renderErrorHtml({ url, server, noPage = false }) {
   );
 }
 
-async function renderHtml({ url, baseHref }, server = false) {
+async function renderHtml<RenderHtml>(
+  { url, baseHref, config },
+  server = false
+) {
   if (!isUrl(url)) {
     return renderErrorHtml({ url, server });
   }
 
-  if (!cacheConfig.disabled && appCache?.get) {
-    try {
-      const cachedHtml = await appCache?.get(url);
-      if (cachedHtml) {
-        return load(cachedHtml);
-      }
-    } catch (e) {
-      console.error(e);
+  try {
+    const cachedHtml = await appCache.get(url);
+    if (cachedHtml) {
+      return load(cachedHtml);
     }
+  } catch (e) {
+    console.error(e);
   }
+
+  const { inline, cors } = {
+    inline: {
+      ...appSourceConfig.inline,
+      ...config?.inline,
+    },
+    cors: {
+      ...appSourceConfig.cors,
+      ...config?.cors,
+    },
+  };
 
   try {
     const response = await fetch(url, {
-      uri: url,
       headers,
     });
     const html = await response.text();
     const $html = load(html);
 
-    if ($html) {
-      $html("head").prepend(`<base target="_self" href="${url}">`);
-
-      if (!!baseHref) {
-        // $html('script').attr('crossorigin', 'anonymous')
-        $html("script").attr("src", (i, src) =>
-          manipulateSource(i, src, url, $html)
-        );
-        // $html('link').attr('href', (i, src) =>
-        //   manipulateSource(i, src, url)
-        // )
-      }
-      // create or inject scripts here to bypass security issues by reverse engineering
-      // $html('head').prepend(`<script async>
-      // console.trace();
-      // </script>`)
-      !cacheConfig.disabled && appCache?.set(url, $html.html());
+    // BASE TARGET FOR RESOURCES
+    if (!!baseHref) {
+      await $html("head").prepend(`<base target="_self" href="${url}">`);
     }
+
+    const inlineMutations: {
+      key: string;
+      src: string;
+      attribute: string;
+    }[] = [];
+
+    // GATHER INLINE ELEMENTS
+    for await (const key of Object.keys(inline)) {
+      if (inline[key]) {
+        const attribute = "src";
+        await $html(key).attr(attribute, function (_, src) {
+          if (src) {
+            inlineMutations.push({ key, attribute, src });
+          }
+          return src;
+        });
+      }
+    }
+
+    // MUTATE INLINE ELEMENTS
+    for await (const com of inlineMutations) {
+      const { key, attribute, src } = com;
+      const element = `${key}[${attribute}="${src}"]`;
+      await mutateSource({ key: element, src }, url, $html);
+      await $html(element).removeAttr(attribute);
+    }
+
+    await $html(`[src="undefined"]`).removeAttr("src");
+
+    // CORS ELEMENTS
+    for await (const key of Object.keys(cors)) {
+      if (cors[key]) {
+        await $html(key).attr("crossorigin", cors[key]);
+      }
+    }
+
+    appCache.set(url, $html.html());
 
     if (server) {
       $html.status = 200;
@@ -105,6 +172,21 @@ async function renderHtml({ url, baseHref }, server = false) {
   return renderErrorHtml({ url, server, noPage: true });
 }
 
+async function fetchFrame(model) {
+  const $html = await renderHtml(model, typeof process !== "undefined");
+  return $html?.html();
+}
+
+function configureResourceControl(appConfig: RenderHtmlConfig) {
+  appSourceConfig = Object.assign({}, defaultConfig, {
+    cors: {
+      ...defaultCorsConfig,
+      ...appConfig?.cors,
+    },
+    inline: { ...defaultInlineConfig, ...appConfig?.inline },
+  });
+}
+
 function createIframe(req, res, next) {
   res.createIframe = async (model) => {
     const $html = await renderHtml(model, true);
@@ -114,10 +196,11 @@ function createIframe(req, res, next) {
   next();
 }
 
-export async function fetchFrame(model) {
-  const $html = await renderHtml(model, typeof process !== "undefined");
-  return $html?.html();
-}
-
-export { configureTemplates, configureCacheControl };
+export {
+  appSourceConfig,
+  configureResourceControl,
+  configureTemplates,
+  configureCacheControl,
+  fetchFrame,
+};
 export default createIframe;

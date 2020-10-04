@@ -1,3 +1,8 @@
 export { stdTTL, checkperiod, cacheConfig } from "./cache";
 export { headers } from "./headers";
-export { url } from "./config";
+export {
+  defaultConfig,
+  defaultCorsConfig,
+  defaultInlineConfig,
+  url,
+} from "./config";

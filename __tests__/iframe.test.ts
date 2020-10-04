@@ -1,6 +1,6 @@
 import { load } from "cheerio";
 
-import { fetchFrame } from "@app/iframe";
+import { fetchFrame, configureResourceControl } from "@app/iframe";
 import { WEBSITE_NOT_FOUND_TEMPLATE } from "@app/templates";
 import { appCache, configureCacheControl } from "@app/cache";
 import { url } from "@app/config";
@@ -9,6 +9,10 @@ import { fetchWithTimestamps, TimeStampMetrics } from "@app/utils";
 describe("iframe render", () => {
   const requestTimeStamps: TimeStampMetrics[] = [];
   const notFoundPage = load(WEBSITE_NOT_FOUND_TEMPLATE).html();
+  configureResourceControl({
+    inline: { script: true },
+    cors: { script: true },
+  });
 
   test("is from external source", async () => {
     const { res, t0, t1 } = await fetchWithTimestamps({ url });
