@@ -28,5 +28,11 @@
     "ts-jest": "^26.4.1",
     "tscpaths": "0.0.9",
     "typescript": "^3.7.5"
+  },
+  "jest": {
+    "preset": "ts-jest",
+    "moduleNameMapper": {
+      "^@app/(.*)$": "<rootDir>/src/$1"
+    }
   }
 }
