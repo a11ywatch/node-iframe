@@ -1,6 +1,6 @@
 # node-iframe
 
-[![A11yWatch](https://circleci.com/gh/A11yWatch/node-iframe.svg?style=svg)](https://circleci.com/gh/A11yWatch/node-iframe)
+[![j-mendez](https://circleci.com/gh/j-mendez/node-iframe.svg?style=svg)](https://circleci.com/gh/j-mendez/node-iframe)
 
 create iframes to bypass security issues on your server with node.js can also be used on the client
 
@@ -13,8 +13,9 @@ create iframes to bypass security issues on your server with node.js can also be
 as express middleware
 
 ```typescript
-const createIframe = require("node-iframe").default;
-// or import createIframe from "node-iframe"
+import createIframe from "node-iframe"
+// or 
+// const createIframe = require("node-iframe").default;
 
 app.use(createIframe);
 

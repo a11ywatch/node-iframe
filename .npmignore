@@ -3,3 +3,4 @@ tsconfig.json
 __tests__
 .circleci
 .github
+example
