@@ -22,7 +22,7 @@ describe("template configuration", () => {
     expect(templateModel[notFound]).toBe(template);
   });
 
-  test("is updated not found template on request", async () => {
+  test("is updated not found template on request non server from incorrect request", async () => {
     const res = await fetchFrame({ url: `/dwd/${url}` });
 
     expect(res).toBe(template);

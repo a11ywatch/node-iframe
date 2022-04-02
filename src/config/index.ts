@@ -1,5 +1,5 @@
 export { stdTTL, checkperiod, cacheConfig } from "./cache";
-export { headers } from "./headers";
+export { appHeaders } from "./headers";
 export {
   defaultConfig,
   defaultCorsConfig,

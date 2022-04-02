@@ -1,6 +1,6 @@
-import isUrl from "is-url";
 import fetch from "isomorphic-unfetch";
 import { load } from "cheerio";
+import { isUrl } from "./utils";
 
 import {
   configureTemplates,
@@ -11,8 +11,7 @@ import {
   defaultConfig,
   defaultCorsConfig,
   defaultInlineConfig,
-  headers,
-  cacheConfig,
+  appHeaders,
 } from "@app/config";
 import { appCache, configureCacheControl } from "@app/cache";
 
@@ -35,33 +34,32 @@ interface RenderHtmlConfig {
   cors?: CorsElementsConfig;
 }
 
-interface RenderHtmlSource {
-  url?: string;
-  baseHref?: string | boolean;
-  config?: RenderHtmlConfig;
-}
-
-type HtmlSource = {
-  html(): string;
-  status?: number;
-};
-
-type RenderHtml = (source: RenderHtmlSource, server?: boolean) => HtmlSource;
-
-type RenderHtmlError = (source: {
-  url?: string;
-  server?: boolean;
-  noPage?: boolean;
-}) => HtmlSource;
-
 let appSourceConfig = defaultConfig;
+let agent;
+
+(function getAgent() {
+  if (!agent) {
+    try {
+      // @ts-ignore
+      if (typeof window === "undefined" && !agent) {
+        const https = require("https");
+        agent = new https.Agent({
+          rejectUnauthorized: false,
+        });
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  }
+})();
 
 // NOTE: control type like wappalyzer for usage only on websites that use specefic frameworks like old versions of react, angular, vue, and etc
-const mutateSource = async ({ src = "", key }, url, $html) => {
+const mutateSource = async ({ src = "", key }, url, $html, headers) => {
   if (src && src[0] === "/") {
     try {
       const res = await fetch(`${url}/${src}`, {
         headers,
+        agent,
       });
       const source = await res.text();
       await $html(key).html(source);
@@ -71,7 +69,7 @@ const mutateSource = async ({ src = "", key }, url, $html) => {
   }
 };
 
-function renderErrorHtml<RenderHtmlError>({ url, server, noPage = false }) {
+function renderErrorHtml({ url, server, noPage = false }) {
   return Object.assign(
     load(
       !url
@@ -82,8 +80,8 @@ function renderErrorHtml<RenderHtmlError>({ url, server, noPage = false }) {
   );
 }
 
-async function renderHtml<RenderHtml>(
-  { url, baseHref, config },
+async function renderHtml(
+  { url, baseHref, config, head = {} },
   server = false
 ) {
   if (!isUrl(url)) {
@@ -110,9 +108,12 @@ async function renderHtml<RenderHtml>(
     },
   };
 
+  const headers = { ...appHeaders, ...head };
+
   try {
     const response = await fetch(url, {
-      headers,
+      headers: head,
+      agent,
     });
     const html = await response.text();
     const $html = load(html);
@@ -145,7 +146,7 @@ async function renderHtml<RenderHtml>(
     for await (const com of inlineMutations) {
       const { key, attribute, src } = com;
       const element = `${key}[${attribute}="${src}"]`;
-      await mutateSource({ key: element, src }, url, $html);
+      await mutateSource({ key: element, src }, url, $html, headers);
       await $html(element).removeAttr(attribute);
     }
 
@@ -187,7 +188,7 @@ function configureResourceControl(appConfig: RenderHtmlConfig) {
   });
 }
 
-function createIframe(req, res, next) {
+function createIframe(_req, res, next) {
   res.createIframe = async (model) => {
     const $html = await renderHtml(model, true);
     res.status($html?.status || 200).send($html.html());
