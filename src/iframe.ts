@@ -37,13 +37,13 @@ interface RenderHtmlConfig {
 let appSourceConfig = defaultConfig;
 let agent;
 
-(function getAgent() {
+function configureAgent(http: boolean) {
   if (!agent) {
     try {
       // @ts-ignore
       if (typeof window === "undefined" && !agent) {
-        const https = require("https");
-        agent = new https.Agent({
+        const transport = http ? require("http") : require("https");
+        agent = new transport.Agent({
           rejectUnauthorized: false,
         });
       }
@@ -51,7 +51,7 @@ let agent;
       console.error(e);
     }
   }
-})();
+}
 
 // NOTE: control type like wappalyzer for usage only on websites that use specefic frameworks like old versions of react, angular, vue, and etc
 const mutateSource = async ({ src = "", key }, url, $html, headers) => {
@@ -199,6 +199,7 @@ function createIframe(_req, res, next) {
 
 export {
   appSourceConfig,
+  configureAgent,
   configureResourceControl,
   configureTemplates,
   configureCacheControl,
