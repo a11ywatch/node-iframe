@@ -13,7 +13,6 @@ import {
   defaultInlineConfig,
   appHeaders,
 } from "@app/config";
-import { appCache, configureCacheControl } from "@app/cache";
 
 type CorsResourceType = "anonymous" | "use-credentials" | boolean;
 
@@ -35,17 +34,51 @@ interface RenderHtmlConfig {
 }
 
 let appSourceConfig = defaultConfig;
-let agent;
 
-function configureAgent(http: boolean) {
-  if (!agent) {
+let httpAgent;
+let httpsAgent;
+
+let agentConfigured = false;
+
+const agent = agentConfigured
+  ? (_parsedURL) => {
+      if (_parsedURL.protocol == "http:" && setAgent(true)) {
+        return httpAgent;
+      } else if (setAgent(false)) {
+        setAgent(false);
+        return httpsAgent;
+      }
+    }
+  : undefined;
+
+// run agent top level setter
+function setAgent(http: boolean): boolean {
+  try {
+    if (http && !httpAgent) {
+      const transport = require("http");
+      httpAgent = new transport.Agent({
+        rejectUnauthorized: false,
+      });
+    } else if (!httpsAgent) {
+      const transport = require("https");
+      httpsAgent = new transport.Agent({
+        rejectUnauthorized: false,
+      });
+    }
+    return true;
+  } catch (e) {
+    console.error(e);
+    return false;
+  }
+}
+
+// configure http agent usage
+function configureAgent() {
+  if (!agentConfigured) {
     try {
       // @ts-ignore
-      if (typeof window === "undefined" && !agent) {
-        const transport = http ? require("http") : require("https");
-        agent = new transport.Agent({
-          rejectUnauthorized: false,
-        });
+      if (typeof window === "undefined" && !agentConfigured) {
+        agentConfigured = true;
       }
     } catch (e) {
       console.error(e);
@@ -86,15 +119,6 @@ async function renderHtml(
 ) {
   if (!isUrl(url)) {
     return renderErrorHtml({ url, server });
-  }
-
-  try {
-    const cachedHtml = await appCache.get(url);
-    if (cachedHtml) {
-      return load(cachedHtml);
-    }
-  } catch (e) {
-    console.error(e);
   }
 
   const { inline, cors } = {
@@ -159,8 +183,6 @@ async function renderHtml(
       }
     }
 
-    appCache.set(url, $html.html());
-
     if (server) {
       $html.status = 200;
     }
@@ -202,7 +224,6 @@ export {
   configureAgent,
   configureResourceControl,
   configureTemplates,
-  configureCacheControl,
   fetchFrame,
 };
 export default createIframe;

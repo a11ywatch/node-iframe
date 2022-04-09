@@ -1,6 +1,6 @@
 {
   "name": "node-iframe",
-  "version": "1.6.4",
+  "version": "1.7.0",
   "description": "create a iframe on your server to bypass CORS issues. ( reverse engineer security issues )",
   "main": "dist/iframe.js",
   "scripts": {
@@ -17,21 +17,24 @@
   "license": "MIT",
   "dependencies": {
     "cheerio": "^1.0.0-rc.3",
-    "isomorphic-unfetch": "^3.1.0",
-    "node-cache": "^5.1.0"
+    "isomorphic-unfetch": "^3.1.0"
   },
   "devDependencies": {
-    "dotenv": "^8.2.0",
+    "@swc/core": "^1.2.165",
+    "@swc/jest": "^0.2.20",
     "express": "^4.17.1",
-    "jest": "^26.4.0",
-    "ts-jest": "^26.4.1",
+    "jest": "^26.6.3",
     "tscpaths": "0.0.9",
     "typescript": "^3.7.5"
   },
   "jest": {
-    "preset": "ts-jest",
     "moduleNameMapper": {
       "^@app/(.*)$": "<rootDir>/src/$1"
+    },
+    "transform": {
+      "^.+\\.(t|j)sx?$": [
+        "@swc/jest"
+      ]
     }
   }
 }
