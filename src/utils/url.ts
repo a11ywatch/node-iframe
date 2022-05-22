@@ -1,8 +1,7 @@
 let URL;
 
 try {
-  // @ts-ignore
-  if (typeof window !== "undefined") {
+  if (typeof process === "undefined") {
     // @ts-ignore
     URL = window.URL;
   } else {

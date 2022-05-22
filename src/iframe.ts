@@ -75,13 +75,9 @@ function setAgent(http: boolean): boolean {
 // configure http agent usage
 function configureAgent() {
   if (!agentConfigured) {
-    try {
-      // @ts-ignore
-      if (typeof window === "undefined" && !agentConfigured) {
-        agentConfigured = true;
-      }
-    } catch (e) {
-      console.error(e);
+    // @ts-ignore
+    if (typeof window === "undefined" && !agentConfigured) {
+      agentConfigured = true;
     }
   }
 }
@@ -94,8 +90,11 @@ const mutateSource = async ({ src = "", key }, url, $html, headers) => {
         headers,
         agent,
       });
-      const source = await res.text();
-      await $html(key).html(source);
+
+      if (res && res.ok) {
+        const source = await res.text();
+        await $html(key).html(source);
+      }
     } catch (e) {
       console.error(e);
     }
@@ -144,7 +143,7 @@ async function renderHtml(
 
     // BASE TARGET FOR RESOURCES
     if (!!baseHref) {
-      await $html("head").prepend(`<base target="_self" href="${url}">`);
+      $html("head").prepend(`<base target="_self" href="${url}">`);
     }
 
     const inlineMutations: {
@@ -154,12 +153,12 @@ async function renderHtml(
     }[] = [];
 
     // GATHER INLINE ELEMENTS
-    for await (const key of Object.keys(inline)) {
+    for (const key of Object.keys(inline)) {
       if (inline[key]) {
         const attribute = "src";
-        await $html(key).attr(attribute, function (_, src) {
+        $html(key).attr(attribute, function (_, src) {
           if (src) {
-            inlineMutations.push({ key, attribute, src });
+            inlineMutations.push({ key, attribute, src: src + "" });
           }
           return src;
         });
@@ -167,24 +166,20 @@ async function renderHtml(
     }
 
     // MUTATE INLINE ELEMENTS
-    for await (const com of inlineMutations) {
+    for (const com of inlineMutations) {
       const { key, attribute, src } = com;
       const element = `${key}[${attribute}="${src}"]`;
       await mutateSource({ key: element, src }, url, $html, headers);
-      await $html(element).removeAttr(attribute);
+      $html(element).removeAttr(attribute);
     }
 
-    await $html(`[src="undefined"]`).removeAttr("src");
+    $html(`[src="undefined"]`).removeAttr("src");
 
     // CORS ELEMENTS
-    for await (const key of Object.keys(cors)) {
+    for (const key of Object.keys(cors)) {
       if (cors[key]) {
-        await $html(key).attr("crossorigin", cors[key]);
+        $html(key).attr("crossorigin", cors[key]);
       }
-    }
-
-    if (server) {
-      $html.status = 200;
     }
 
     return $html;
@@ -196,8 +191,12 @@ async function renderHtml(
 }
 
 async function fetchFrame(model) {
-  const $html = await renderHtml(model, typeof process !== "undefined");
-  return $html?.html();
+  try {
+    const $html = await renderHtml(model, typeof process !== "undefined");
+    return $html?.html();
+  } catch (e) {
+    console.error(e);
+  }
 }
 
 function configureResourceControl(appConfig: RenderHtmlConfig) {
@@ -210,10 +209,24 @@ function configureResourceControl(appConfig: RenderHtmlConfig) {
   });
 }
 
+/**
+ * Create an iframe middleware with express.
+ * @example
+ * // sets up middleware for use.
+ * app.use(createIframe);
+ * @returns {void} Returns reverse engineered iframe that can be used across domains.
+ */
 function createIframe(_req, res, next) {
   res.createIframe = async (model) => {
-    const $html = await renderHtml(model, true);
-    res.status($html?.status || 200).send($html.html());
+    try {
+      const $html = await renderHtml(model, true);
+
+      if ($html) {
+        res.status(200).send($html.html());
+      }
+    } catch (e) {
+      console.error(e);
+    }
   };
 
   next();

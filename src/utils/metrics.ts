@@ -12,7 +12,7 @@ export type TimeStampMetrics = {
 };
 
 interface FetchResponse extends TimeStampMetrics {
-  res: string;
+  res?: string;
 }
 
 const fetchWithTimestamps = async ({
@@ -21,7 +21,12 @@ const fetchWithTimestamps = async ({
   log,
 }: FetchParams): Promise<FetchResponse> => {
   const t0 = Date.now();
-  const res = await fetchFrame({ url });
+  let res;
+  try {
+    res = await fetchFrame({ url });
+  } catch (e) {
+    console.error(e);
+  }
   const t1 = Date.now();
   log && console.log(`${operation || "Operation"}: ${t1 - t0} milliseconds.`);
   return { res, t0, t1 };
