@@ -133,58 +133,71 @@ async function renderHtml(
 
   const headers = { ...appHeaders, ...head };
 
+  let response;
+
   try {
-    const response = await fetch(url, {
+    response = await fetch(url, {
       headers: head,
       agent,
     });
-    const html = await response.text();
-    const $html = load(html);
-
-    // BASE TARGET FOR RESOURCES
-    if (!!baseHref) {
-      $html("head").prepend(`<base target="_self" href="${url}">`);
-    }
-
-    const inlineMutations: {
-      key: string;
-      src: string;
-      attribute: string;
-    }[] = [];
-
-    // GATHER INLINE ELEMENTS
-    for (const key of Object.keys(inline)) {
-      if (inline[key]) {
-        const attribute = "src";
-        $html(key).attr(attribute, function (_, src) {
-          if (src) {
-            inlineMutations.push({ key, attribute, src: src + "" });
-          }
-          return src;
-        });
-      }
-    }
-
-    // MUTATE INLINE ELEMENTS
-    for (const com of inlineMutations) {
-      const { key, attribute, src } = com;
-      const element = `${key}[${attribute}="${src}"]`;
-      await mutateSource({ key: element, src }, url, $html, headers);
-      $html(element).removeAttr(attribute);
-    }
-
-    $html(`[src="undefined"]`).removeAttr("src");
-
-    // CORS ELEMENTS
-    for (const key of Object.keys(cors)) {
-      if (cors[key]) {
-        $html(key).attr("crossorigin", cors[key]);
-      }
-    }
-
-    return $html;
   } catch (e) {
     console.error(e);
+  }
+
+  if (response && response.ok) {
+    try {
+      const html = await response.text();
+
+      if (!html) {
+        return renderErrorHtml({ url, server, noPage: true });
+      }
+      const $html = load(html);
+
+      // BASE TARGET FOR RESOURCES
+      if (!!baseHref) {
+        $html("head").prepend(`<base target="_self" href="${url}">`);
+      }
+
+      const inlineMutations: {
+        key: string;
+        src: string;
+        attribute: string;
+      }[] = [];
+
+      // GATHER INLINE ELEMENTS
+      for (const key of Object.keys(inline)) {
+        if (inline[key]) {
+          const attribute = "src";
+          $html(key).attr(attribute, function (_, src) {
+            if (src) {
+              inlineMutations.push({ key, attribute, src: src + "" });
+            }
+            return src;
+          });
+        }
+      }
+
+      // MUTATE INLINE ELEMENTS
+      for (const com of inlineMutations) {
+        const { key, attribute, src } = com;
+        const element = `${key}[${attribute}="${src}"]`;
+        await mutateSource({ key: element, src }, url, $html, headers);
+        $html(element).removeAttr(attribute);
+      }
+
+      $html(`[src="undefined"]`).removeAttr("src");
+
+      // CORS ELEMENTS
+      for (const key of Object.keys(cors)) {
+        if (cors[key]) {
+          $html(key).attr("crossorigin", cors[key]);
+        }
+      }
+
+      return $html;
+    } catch (e) {
+      console.error(e);
+    }
   }
 
   return renderErrorHtml({ url, server, noPage: true });
