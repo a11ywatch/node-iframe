@@ -10,7 +10,7 @@
     "declaration": true,
     "declarationDir": "./types",
     "strict": true,
-    "esModuleInterop": false,
+    "esModuleInterop": true,
     "skipLibCheck": true,
     "baseUrl": ".",
     "paths": {

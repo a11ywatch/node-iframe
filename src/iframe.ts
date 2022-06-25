@@ -38,6 +38,7 @@ let appSourceConfig = defaultConfig;
 let httpAgent;
 let httpsAgent;
 
+// custom User agent
 let agentConfigured = false;
 
 const agent = agentConfigured
@@ -75,10 +76,7 @@ function setAgent(http: boolean): boolean {
 // configure http agent usage
 function configureAgent() {
   if (!agentConfigured) {
-    // @ts-ignore
-    if (typeof window === "undefined" && !agentConfigured) {
-      agentConfigured = true;
-    }
+    agentConfigured = true;
   }
 }
 
@@ -91,9 +89,9 @@ const mutateSource = async ({ src = "", key }, url, $html, headers) => {
         agent,
       });
 
-      if (res && res.ok) {
+      if (res) {
         const source = await res.text();
-        await $html(key).html(source);
+        $html(key).html(source);
       }
     } catch (e) {
       console.error(e);
@@ -144,7 +142,7 @@ async function renderHtml(
     console.error(e);
   }
 
-  if (response && response.ok) {
+  if (response) {
     try {
       const html = await response.text();
 

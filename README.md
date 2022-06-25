@@ -59,7 +59,7 @@ configureResourceControl({
 configureTemplates("<div>No Fish found</div>", 1);
 ```
 
-[Example](https://www.a11ywatch.com/testout)
+[Example](https://a11ywatch.com/testout)
 
 ## License
 
