@@ -1,6 +1,6 @@
 {
   "name": "node-iframe",
-  "version": "1.7.4",
+  "version": "1.7.5",
   "description": "create iframes on your server to bypass CORS. Reverse engineer security issues.",
   "main": "dist/iframe.js",
   "scripts": {

@@ -1,6 +1,5 @@
 import fetch from "isomorphic-unfetch";
 import { load } from "cheerio";
-import { isUrl } from "./utils";
 
 import {
   configureTemplates,
@@ -114,7 +113,7 @@ async function renderHtml(
   { url, baseHref, config, head = {} },
   server = false
 ) {
-  if (!isUrl(url)) {
+  if (!url) {
     return renderErrorHtml({ url, server });
   }
 
