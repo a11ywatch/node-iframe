@@ -1,13 +1,13 @@
 import { load } from "cheerio";
 import { createServer } from "http";
-import fetch from "isomorphic-unfetch";
-
+import { fetcher } from "../src/fetch";
 import createIframe from "@app/iframe";
 import { fetchFrame } from "@app/iframe";
-import { url } from "@app/config";
 import { WEBSITE_NOT_FOUND_TEMPLATE } from "@app/templates";
 import { parse as urlParse } from "url";
 import express from "express";
+
+const url = process.env.API_URL || "https://www.drake.com";
 
 describe("api", () => {
   const notFoundPage = load(WEBSITE_NOT_FOUND_TEMPLATE).html();
@@ -29,10 +29,9 @@ describe("api", () => {
 
   test("is from api", async () => {
     try {
-      const res = await fetch(
+      const data = await fetcher(
         `http://localhost:${server.address().port}/iframe?url=${url}`
       );
-      const data = await res.text();
 
       expect(data).not.toBe(notFoundPage);
     } catch (e) {
@@ -64,10 +63,9 @@ describe("api", () => {
 
     test("is from express", async () => {
       try {
-        const res = await fetch(
+        const data = await fetcher(
           `http://localhost:${server.address().port}/iframe?url=${url}`
         );
-        const data = await res.text();
 
         expect(data).not.toBe(notFoundPage);
       } catch (e) {

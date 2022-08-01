@@ -1,8 +1,9 @@
 import { load } from "cheerio";
 import { fetchFrame, configureResourceControl } from "@app/iframe";
 import { WEBSITE_NOT_FOUND_TEMPLATE } from "@app/templates";
-import { url } from "@app/config";
 import { fetchWithTimestamps, TimeStampMetrics } from "@app/utils";
+
+const url = process.env.API_URL || "https://www.drake.com";
 
 describe("iframe render", () => {
   const requestTimeStamps: TimeStampMetrics[] = [];

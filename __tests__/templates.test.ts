@@ -6,7 +6,8 @@ import {
   TemplateType,
 } from "@app/templates";
 import { fetchFrame } from "@app/iframe";
-import { url } from "@app/config";
+
+const url = process.env.API_URL || "https://www.drake.com";
 
 describe("template configuration", () => {
   const template = load("<div>test</div>").html();

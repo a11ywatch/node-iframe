@@ -1,7 +1,3 @@
-const url =
-  process.env.API_URL ||
-  (process.env.NODE_ENV === "test" ? "https://www.drake.com" : "");
-
 const defaultInlineConfig = {
   script: false,
 };
@@ -19,4 +15,4 @@ const defaultConfig = {
   cors: defaultCorsConfig,
 };
 
-export { defaultConfig, defaultCorsConfig, defaultInlineConfig, url };
+export { defaultConfig, defaultCorsConfig, defaultInlineConfig };

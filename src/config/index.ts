@@ -3,5 +3,4 @@ export {
   defaultConfig,
   defaultCorsConfig,
   defaultInlineConfig,
-  url,
 } from "./config";

@@ -1,4 +1,4 @@
-import fetch from "isomorphic-unfetch";
+import { fetcher } from "./fetch";
 import { load } from "cheerio";
 
 import {
@@ -45,7 +45,6 @@ const agent = agentConfigured
       if (_parsedURL.protocol == "http:" && setAgent(true)) {
         return httpAgent;
       } else if (setAgent(false)) {
-        setAgent(false);
         return httpsAgent;
       }
     }
@@ -83,13 +82,13 @@ function configureAgent() {
 const mutateSource = async ({ src = "", key }, url, $html, headers) => {
   if (src && src[0] === "/") {
     try {
-      const res = await fetch(`${url}/${src}`, {
+      const res = await fetcher(`${url}/${src}`, {
         headers,
         agent,
       });
 
       if (res) {
-        const source = await res.text();
+        const source = typeof process !== "undefined" ? res : await res.text();
         $html(key).html(source);
       }
     } catch (e) {
@@ -133,7 +132,7 @@ async function renderHtml(
   let response;
 
   try {
-    response = await fetch(url, {
+    response = await fetcher(url, {
       headers: head,
       agent,
     });
@@ -143,7 +142,8 @@ async function renderHtml(
 
   if (response) {
     try {
-      const html = await response.text();
+      const html =
+        typeof process !== "undefined" ? response : await response.text();
 
       if (!html) {
         return renderErrorHtml({ url, server, noPage: true });
