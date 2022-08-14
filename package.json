@@ -1,11 +1,15 @@
 {
   "name": "node-iframe",
-  "version": "1.8.4",
+  "version": "1.8.5",
   "description": "create iframes on your server to bypass CORS. Reverse engineer security issues.",
   "main": "dist/iframe.js",
   "scripts": {
     "test": "jest",
     "prepare": "tsc --project tsconfig.json && tscpaths -p tsconfig.json -s ./src -o ./dist"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/j-mendez/node-iframe.git"
   },
   "keywords": [
     "node-iframe",

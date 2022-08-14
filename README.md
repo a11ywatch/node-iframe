@@ -2,7 +2,7 @@
 
 [![j-mendez](https://circleci.com/gh/j-mendez/node-iframe.svg?style=svg)](https://circleci.com/gh/j-mendez/node-iframe)
 
-create iframes to bypass security issues on your server with node.js can also be used on the client
+create iframes to bypass security issues on your server with node.js can also be used in a browser
 
 ## Installation
 
@@ -14,8 +14,6 @@ as express middleware
 
 ```typescript
 import createIframe from "node-iframe";
-// or
-// const createIframe = require("node-iframe").default;
 
 app.use(createIframe);
 
@@ -37,7 +35,7 @@ On the client use directly in your iframe if your api is on the same server set 
 You can even fetch the iframe directly by importing `fetchFrame` on the client or server.
 
 ```typescript
-const { fetchFrame } = require("node-iframe");
+import { fetchFrame } from "node-iframe";
 
 async function fetchIframe() {
   return await fetchFrame({ url: "https://www.etsy.com" });
