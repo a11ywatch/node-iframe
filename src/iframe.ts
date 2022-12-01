@@ -79,14 +79,14 @@ function configureAgent() {
 }
 
 // NOTE: control type like wappalyzer for usage only on websites that use specefic frameworks like old versions of react, angular, vue, and etc
-const mutateSource = async ({ src = "", key }, url, $html, headers) => {
+const mutateSource = async ({ src = "", key }, url, $html, headers, retry) => {
   if (src && src[0] === "/") {
     try {
       const res = await fetcher(`${url}/${src}`, {
         headers,
         agent,
-      });
-
+      }, retry);
+      
       if (res) {
         const source = typeof process !== "undefined" ? res : await res.text();
         $html(key).html(source);
@@ -109,7 +109,7 @@ function renderErrorHtml({ url, server, noPage = false }) {
 }
 
 async function renderHtml(
-  { url, baseHref, config, head = {} },
+  { url, baseHref, config, head = {}, retry },
   server = false
 ) {
   if (!url) {
@@ -135,7 +135,8 @@ async function renderHtml(
     response = await fetcher(url, {
       headers: head,
       agent,
-    });
+    }, 
+    retry);
   } catch (e) {
     console.error(e);
   }
@@ -178,7 +179,7 @@ async function renderHtml(
       for (const com of inlineMutations) {
         const { key, attribute, src } = com;
         const element = `${key}[${attribute}="${src}"]`;
-        await mutateSource({ key: element, src }, url, $html, headers);
+        await mutateSource({ key: element, src }, url, $html, headers, retry);
         $html(element).removeAttr(attribute);
       }
 

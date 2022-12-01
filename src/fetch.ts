@@ -27,30 +27,32 @@ if (!fetcher) {
       }
 
       const getHttp = (url: string) =>
-        url.includes("https://") ? https : http;
+        url.startsWith("https://") ? https : http;
 
       const get = (
         url: string,
         options?: {
           headers?: Record<string, any>;
           agent?: string | (() => string);
-        }
+        },
+        retry?: number
       ) => {
         const { agent, headers } = options ?? {};
+        let fetchOptions = {};
 
         if (typeof agent !== "undefined") {
           if (typeof agent === "function") {
             const ua = agent();
             if (typeof ua !== "undefined") {
-              options = { agent: ua };
+              fetchOptions = { agent: ua };
             }
           } else {
-            options = { agent };
+            fetchOptions = { agent };
           }
         }
 
         if (typeof headers !== "undefined") {
-          options = { ...options, headers };
+          fetchOptions = { ...fetchOptions, headers };
         }
 
         const httpMethod = getHttp(url);
@@ -59,7 +61,10 @@ if (!fetcher) {
           let body = "";
 
           httpMethod
-            .get(url, options, (res) => {
+            .get(url, fetchOptions, (res) => {
+              if((res.statusCode === 301 || res.statusCode === 302) && retry) {
+                return get(res.headers.location, options, --retry)      
+              }
               res.setEncoding("utf8");
 
               res.on("data", (d) => {
