@@ -2,29 +2,14 @@ let fetcher: // @ts-ignore
 | typeof global.fetch
   | ((url: string, options: Record<string, unknown>) => Promise<string>);
 
-let https;
-let http;
-
 if (!fetcher) {
+  
   (async () => {
     if (process) {
-      // load https module
-      if (!https) {
-        try {
-          https = await import("https");
-        } catch (e) {
-          console.error("https support is disabled!");
-        }
-      }
-
-      // load http modules
-      if (!http) {
-        try {
-          http = await import("http");
-        } catch (e) {
-          console.error("http support is disabled!");
-        }
-      }
+      const followRedirects = require('follow-redirects');
+      followRedirects.maxRedirects = 4;
+      const http = followRedirects.http;
+      const https = followRedirects.https;
 
       const getHttp = (url: string) =>
         url.startsWith("https://") ? https : http;
@@ -34,8 +19,7 @@ if (!fetcher) {
         options?: {
           headers?: Record<string, any>;
           agent?: string | (() => string);
-        },
-        retry?: number
+        }
       ) => {
         const { agent, headers } = options ?? {};
         let fetchOptions = {};
@@ -62,9 +46,6 @@ if (!fetcher) {
 
           httpMethod
             .get(url, fetchOptions, (res) => {
-              if((res.statusCode === 301 || res.statusCode === 302) && retry) {
-                return get(res.headers.location, options, --retry)      
-              }
               res.setEncoding("utf8");
 
               res.on("data", (d) => {

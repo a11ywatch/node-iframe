@@ -1,6 +1,6 @@
 {
   "name": "node-iframe",
-  "version": "1.8.9",
+  "version": "1.9.1",
   "description": "create iframes on your server to bypass CORS. Reverse engineer security issues.",
   "main": "dist/iframe.js",
   "scripts": {
@@ -9,7 +9,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/j-mendez/node-iframe.git"
+    "url": "git+https://github.com/a11ywatch/node-iframe.git"
   },
   "keywords": [
     "node-iframe",
@@ -20,7 +20,8 @@
   "author": "Jeff Mendez <jeff@a11ywatch.com>",
   "license": "MIT",
   "dependencies": {
-    "cheerio": "^1.0.0-rc.3"
+    "cheerio": "^1.0.0-rc.3",
+    "follow-redirects": "^1.15.2"
   },
   "devDependencies": {
     "@swc/core": "^1.2.205",
