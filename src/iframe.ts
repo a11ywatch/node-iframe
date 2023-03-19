@@ -152,7 +152,7 @@ async function renderHtml(
 
       // BASE TARGET FOR RESOURCES
       if (!!baseHref) {
-        $html("head").prepend(`<base target="_self" href="${url}">`);
+        $html("head").prepend(`<base target="_self" href="${typeof baseHref === "string" ? baseHref : url}">`);
       }
 
       const inlineMutations: {
@@ -210,13 +210,13 @@ async function fetchFrame(model) {
 }
 
 function configureResourceControl(appConfig: RenderHtmlConfig) {
-  appSourceConfig = Object.assign({}, defaultConfig, {
+  appSourceConfig = {
     cors: {
       ...defaultCorsConfig,
       ...appConfig?.cors,
     },
     inline: { ...defaultInlineConfig, ...appConfig?.inline },
-  });
+  };
 }
 
 /**

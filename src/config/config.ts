@@ -2,7 +2,13 @@ const defaultInlineConfig = {
   script: false,
 };
 
-const defaultCorsConfig = {
+const defaultCorsConfig: {
+  script: boolean | string;
+  link: boolean | string;
+  img: boolean | string;
+  audio: boolean | string;
+  video: boolean | string;
+} = {
   script: false,
   link: false,
   img: false,
