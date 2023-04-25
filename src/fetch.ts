@@ -6,10 +6,21 @@ if (!fetcher) {
   
   (async () => {
     if (process) {
-      const followRedirects = require('follow-redirects');
-      followRedirects.maxRedirects = 4;
-      const http = followRedirects.http;
-      const https = followRedirects.https;
+      let http;
+      let https;
+
+      // add edge non streaming support
+      if(process.env.VERCEL_EDGE) {
+        http = require("http")
+        https = require("https")
+      } else {
+        const followRedirects = require('follow-redirects');
+
+        followRedirects.maxRedirects = 4;
+  
+        http = followRedirects.http;
+        https = followRedirects.https;
+      }
 
       const getHttp = (url: string) =>
         url.startsWith("https://") ? https : http;
