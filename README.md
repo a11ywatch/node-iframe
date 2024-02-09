@@ -31,12 +31,13 @@ On the client use directly in your iframe if your api is on the same server set 
 ```
 
 You can even fetch the iframe directly by importing `fetchFrame` on the client or server.
-
+Set `safeMode=true` in conjunction with inline scripts to add error handling.
+ 
 ```typescript
 import { fetchFrame } from "node-iframe";
 
 async function fetchIframe() {
-  return await fetchFrame({ url: "https://www.etsy.com" });
+  return await fetchFrame({ url: "https://www.etsy.com", safeMode: false });
 }
 ```
 

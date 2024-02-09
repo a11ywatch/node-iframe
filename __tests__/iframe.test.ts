@@ -17,7 +17,7 @@ describe("iframe render", () => {
     const { res, t0, t1 } = await fetchWithTimestamps({ url });
 
     requestTimeStamps.push({ t0, t1 });
-
+    
     expect(res).not.toBe(notFoundPage);
   });
 
